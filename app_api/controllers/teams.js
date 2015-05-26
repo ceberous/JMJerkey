@@ -3,65 +3,78 @@ var mongoose = require('mongoose');
 var Team = mongoose.model('Team');
 var Stats = mongoose.model('Stats');
 
-var request = require('request');
-var apiOptions = {
-	server: "http://localhost:3000"
-};
-if (process.env.NODE_ENV === 'production') {
-	// apiOptions.server = "https:/getting-mean-loc8r.herokuapp.com";
-}
-
-var requestOptions = {
-	url: 'http://yourapi.com/api/path',
-	method: "GET",
-	json: {},
-	qs: {
-		offset: 20
-	}
-};
-
-request( requestOptions , function( err , response , body ) {
-
-	if (err) {console.log(err);}
-	else if (response.statusCode === 200) {console.log(body);}
-	else {console.log(response.statusCode);}
-
-});
-
-var sendJSONResponse = function( res , status , content ) {
-    res.status(status);
-    res.json(content);
-};
-
-var doAddPlayer = function( req , res , team ) {
-
-	if (!team) {sendJSONResponse(res , 404 , {"message": "team not found"});}
-	else {
-
-		// Push into Collection
-		team.players.push({
-			player: req.params.newPlayer
-		});
-
-		// Save Object to Database
-		// Update Average Rating
-		// Return the Saved Review
-		team.save(function( err , team ) {
-			var thisTeam;
-			if (err) {sendJSONResponse( res , 404 , err );}
-			else {
-				thisTeam = team.players[team.players.length - 1];
-				sendJSONResponse( res , 201 , thisTeam );
-			}
-		});
-
+// API CONIFG
+// ===================================
+	var request = require('request');
+	var apiOptions = {
+		server: "http://localhost:3000"
+	};
+	if (process.env.NODE_ENV === 'production') {
+		// apiOptions.server = "https:/getting-mean-loc8r.herokuapp.com";
 	}
 
-};
+	var requestOptions = {
+		url: 'http://yourapi.com/api/path',
+		method: "GET",
+		json: {},
+		qs: {
+			offset: 20
+		}
+	};
+
+	request( requestOptions , function( err , response , body ) {
+
+		if (err) {console.log(err);}
+		else if (response.statusCode === 200) {console.log(body);}
+		else {console.log(response.statusCode);}
+
+	});
+// ======== END API ==================
+
+
+// HELPER FUNCTIONS 
+// ======================================
+	var sendJSONResponse = function( res , status , content ) {
+	    res.status(status);
+	    res.json(content);
+	};
+
+	var doAddPlayer = function( req , res , team ) {
+
+		if (!team) {sendJSONResponse(res , 404 , {"message": "team not found"});}
+		else {
+
+			team.players.push({
+				player: req.params.newPlayer
+			});
+
+			team.save(function( err , team ) {
+				// var thisTeam;
+				if (err) {sendJSONResponse( res , 404 , err );}
+				/*
+				else {
+					// thisTeam = team.players[team.players.length - 1];
+					// sendJSONResponse( res , 201 , team );
+				}
+				*/
+
+				Team.find({} , function( err , teams ){
+					sendJSONResponse( res , 200 , teams);
+				});
+
+			});
+
+			
+
+		}
+
+	};
+// ========== END HELPER ==================
 
 
 
-// GET ALL TEAMS
+
+
 module.exports.getAllTeams = function(req, res) {
 
 	console.log(req.params.teamNumber);
@@ -70,70 +83,6 @@ module.exports.getAllTeams = function(req, res) {
 		sendJSONResponse( res , 200 , teams);
 	});
 
-};
-
-module.exports.getTeamNumber = function( req , res ) {
-
-	// existance
-	if (req.params && req.params.teamNumber) {
-
-		Team.find({"teamNumber": req.params.teamNumber})
-			// Read ONE location
-			.exec(function( err , team ) {
-				if (!err) {
-					sendJSONResponse( res , 200 , team );
-				} else {
-					sendJSONResponse( res , 404 , {
-						"message": "locationid not found in database"
-					});
-				}
-			})
-
-		;
-
-	} 
-	else {
-		sendJSONResponse( res , 404 , {
-			"message" : "No Locationid in request"
-		});
-	}
-
-
-};	
-
-module.exports.makeCurrentTeam = function( req , res ) {
-	Stats.create(
-		{
-			currentTeam: 1,
-		},
-		function( err , obj ) {
-			if (err) {
-				sendJSONResponse( res , 400 , err );
-			}
-			else {
-				sendJSONResponse( res , 201 , obj );
-			}			
-		}
-	);
-};	
-
-
-module.exports.getCurrentTeam = function( req , res ) {
-	Stats.findOne().select('currentTeam')
-		.exec(function( err , object ) {
-			console.log('Logging getCurrentTeam() { ' + '\n\t' + object+ '\n}');
-			sendJSONResponse( res , 200 , object );
-		})
-	;
-};
-
-module.exports.updateCurrentTeam = function( req , res ) {
-	Stats.findOne( {} , function( err , object ) {
-		object.currentTeam = req.params.number;
-		object.save();
-		console.log('Logging from updateCurrentTeam() { ' + '\n\t' + object + '\n}');
-		sendJSONResponse( res , 200 , object );
-	});
 };
 
 module.exports.teamCreate = function( req , res ) {
@@ -148,8 +97,10 @@ module.exports.teamCreate = function( req , res ) {
 			}
 			else {
 				sendJSONResponse( res , 201 , team );
-			}			
+			}		
+
 		}
+
 	);
 
 	console.log("Should of Created a team with the number : " + req.params.teamNumber);
@@ -162,18 +113,27 @@ module.exports.deleteTeam = function( req , res ) {
 
 	if (teamNumber) {
 
-		Team.findOne({teamNumber: teamNumber})
-			.select('teamNumber players')
+		// HOLY GRAIL OF MONGOOSE FINDING .findOne({})
+		Team.findOne({}) 
+			.select({teamNumber: teamNumber})
 			.exec(function( err , team ) {
 				if (err) {sendJSONResponse(res , 400 , err);}
 				else {
-					team.remove(function (err) {
-						if (err) {console.log(err);}
-						else {
-							console.log('removed');
-							return res.send('');
-						}
-					});
+					if (team) {
+						var teamNum = team.teamNumber;
+						console.log('Team found thats about to be deleted = ');
+						console.log(team);
+						team.remove(function (err) {
+							if (err) {console.log(err);}
+							else {
+								var str = 'removed team #: ' + teamNum;
+								console.log(str);
+								sendJSONResponse( res , 200 , {'message' : str} );
+							}
+						});
+					} else {
+						sendJSONResponse( res , 200 , {'message' : 'nuttin'} );
+					}
 				}
 
 			})
@@ -188,7 +148,8 @@ module.exports.deleteTeam = function( req , res ) {
 
 };
 
-module.exports.playerAdd = function( req , res ) {
+
+module.exports.playerCreate = function( req , res ) {
 
 	console.log("\n(Should Be Adding) { ");	
 	var newPlayer = req.params.newPlayer;
@@ -202,38 +163,16 @@ module.exports.playerAdd = function( req , res ) {
 	if (teamNumber) {
 
 		Team.findOne({teamNumber: teamNumber})
-			.select('teamNumber players')
 			.exec(function( err , team ) {
 				if (err) {sendJSONResponse(res , 400 , err);}
 				else {
+					console.log('Found Team = ');
+					console.log(team);
 					doAddPlayer( req , res , team );
 				}
 
 			})
 		;
-
-
-		/*
-		Team.find({})
-			.select({teamNumber: teamNumber})
-			.exec(function( err , team ) {
-
-				if (err) {sendJSONResponse(res , 400 , err);}
-				else {
-					team.push({
-						players: newPlayer
-					});
-					team.save(function(err){
-						if (err) {return err;}
-						else {console.log('Team Memeber Added');}
-					});
-					console.log(team);
-				}
-
-			})
-		;
-		// doAddPlayer( req , res , foundTeam );
-		*/
 
 	}
 	else {
@@ -244,195 +183,105 @@ module.exports.playerAdd = function( req , res ) {
 
 };
 
-// CREATE
-module.exports.locationsCreate = function(req , res) {
-    
-	Loc.create({
+module.exports.playerDelete = function( req , res ) {
 
-		name: req.body.name,
-		address: req.body.address,
-		facilities: req.body.facilities.split(","),
-		coords: [parseFloat(req.body.lng) , parseFloat(req.body.lat)],
-		openingTimes: [
-			{
-				days: req.body.days1,
-				opening: req.body.opening1,
-				closing: req.body.opening1,
-				closed: req.body.closed1,
-			},
-			{
-				days: req.body.days2,
-				opening: req.body.opening2,
-				closing: req.body.opening2,
-				closed: req.body.closed2,				
-			}
-		]
+	var teamNumber = req.params.teamNumber;
+	var playerID = req.params.playerID;
 
-		},
-
-		function(err , location ) {
-			if (err) {
-				sendJSONResponse( res , 400 , err );
-			}
-			else {
-				sendJSONResponse( res , 201 , location );
-			}
-		}
-
-	);
-
-};  
-
-// READ
-module.exports.locationsReadOne = function( req , res ) {
-
-	// existance
-	if (req.params && req.params.locationid) {
-
-		Loc.findById(req.params.locationid)
-			// Read ONE location
-			.exec(function( err , location ) {
-				if (!err) {
-					sendJSONResponse( res , 200 , location );
-				} else {
-					sendJSONResponse( res , 404 , {
-						"message": "locationid not found in database"
-					});
-				}
-			})
-
-		;
-
-	} 
-	else {
-		sendJSONResponse( res , 404 , {
-			"message" : "No Locationid in request"
-		});
-	}
-
-};
-
-// UPDATE
-module.exports.locationsUpdateOne = function(req , res) {
-
-	if (!req.params.locationid) {
-		sendJSONResponse(res , 404 , {
-			"message": "Not found, locationid is required"
-		});
-		return;
-	}
-
-	Loc.findById(req.params.locationid)
-		.select('-reviews -rating') // Retrieve everything EXCEPT reviews and ratings
-		.exec(function(err , location) {
-
-			if (!location) {
-				sendJSONResponse(res , 404 , {
-					"message": "locationid not found"
-				});
-				return;
-			}
-			else if (err) {
-				sendJSONResponse(res , 404 , err);
-				return;
-			}
-
-			location.name = req.body.name;
-			location.address = req.body.address;
-			location.facilities = req.body.facilities.split(',');
-			location.coords = [parseFloat(req.body.lng) , parseFloat(req.body.lat)];
-
-			location.openingTimes = [
-				{
-					days: req.body.days1,
-					opening: req.body.opening1,
-					closing: req.body.opening1,
-					closed: req.body.closed1,
-				},
-				{
-					days: req.body.days2,
-					opening: req.body.opening2,
-					closing: req.body.opening2,
-					closed: req.body.closed2,				
-				}
-			];
-
-			location.save(function(err , location) {
+	Team.findOne({teamNumber: teamNumber})
+		.exec(function(err , team) {
+			console.log('Found Team : ');
+			console.log(team);
+			team.players.id(playerID).remove();
+			team.save(function( err ) {
 				if (err) {sendJSONResponse(res , 404 , err);}
 				else {
-					sendJSONResponse( res , 200 , location);
+					sendJSONResponse( res , 204 , null);
 				}
 			});
-
 		})
-
 	;
 
 };
 
-// DELETE (instant)
-module.exports.locationsDeleteOne = function(req , res) {
 
-	var locationid = req.params.locationid;
 
-	if (locationid) {
 
-		Loc.findByIdAndRemove(locationid)
-			.exec(function(err , location) {
 
-				if (err) {sendJSONResponse(res , 404 , err); return;}
+// MISC / HOPEFULLY DEGRADED FUNCTIONS
+// ===================================
+	module.exports.getTeamNumber = function( req , res ) {
 
-				sendJSONResponse( res , 204 , null);
+		// existance
+		if (req.params && req.params.teamNumber) {
 
+			Team.find({"teamNumber": req.params.teamNumber})
+				// Read ONE location
+				.exec(function( err , team ) {
+					if (!err) {
+						sendJSONResponse( res , 200 , team );
+					} else {
+						sendJSONResponse( res , 404 , {
+							"message": "locationid not found in database"
+						});
+					}
+				})
+
+			;
+
+		} 
+		else {
+			sendJSONResponse( res , 404 , {
+				"message" : "No Locationid in request"
+			});
+		}
+
+
+	};	
+
+	module.exports.makeCurrentTeam = function( req , res ) {
+		Stats.create(
+			{
+				currentTeam: 1,
+			},
+			function( err , obj ) {
+				if (err) {
+					sendJSONResponse( res , 400 , err );
+				}
+				else {
+					sendJSONResponse( res , 201 , obj );
+				}			
+			}
+		);
+	};	
+
+
+	module.exports.getCurrentTeamTrial = function( req , res ) {
+		Team.count({} , function( err , count ) {
+			sendJSONResponse( res , 200 , count );
+		});
+	};
+
+
+	module.exports.getCurrentTeam = function( req , res ) {
+		Stats.findOne().select('currentTeam')
+			.exec(function( err , object ) {
+				console.log('Logging getCurrentTeam() { ' + '\n\t' + object+ '\n}');
+				sendJSONResponse( res , 200 , object );
 			})
 		;
+	};
 
-	}
-	else {
-		sendJSONResponse(res , 404 , {
-			"message": "No locationid provided"
+	module.exports.updateCurrentTeam = function( req , res ) {
+		Stats.findOne( {} , function( err , object ) {
+			object.currentTeam = req.params.number;
+			object.save();
+			console.log('Logging from updateCurrentTeam() { ' + '\n\t' + object + '\n}');
+			sendJSONResponse( res , 200 , object );
 		});
-	}
+	};
 
-};
-
-// DELETE (with final preperations)
-module.exports.locationsDeleteOneWithPrep = function(req , res) {
-
-	var locationid = req.params.locationid;
-
-	if (locationid) {
-
-		Loc.findById(locationid)
-			.exec(function(err , location) {
-
-				if (err) {sendJSONResponse(res , 404 , err); return;}
-
-				// Perform Final Preperations Here
-					// 1.)
-					// 2.)
-					// 3.)
-
-				// After Steps are completed , finally delete it
-				Loc.remove(function(err , location) {
-					if (err) {sendJSONResponse(res , 404 , err); return;}
-					sendJSONResponse( res , 204 , null);
-				});	
-
-			})
-		;
-
-	}
-	else {
-		sendJSONResponse(res , 404 , {
-			"message": "No locationid provided"
-		});
-	}
-
-};
-
-
-
+// ============END MISC===============
 
 
 

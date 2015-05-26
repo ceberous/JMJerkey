@@ -12,9 +12,10 @@ router.get('/teams/:teamNumber' , ctrlTeams.getTeamNumber);
 router.delete('/teams/:teamNumber' , ctrlTeams.deleteTeam);
 
 
-router.put('/teams/:teamNumber/:newPlayer' , ctrlTeams.playerAdd);
+router.put('/teams/:teamNumber/:newPlayer' , ctrlTeams.playerCreate);
+router.delete('/teams/:teamNumber/:playerID' , ctrlTeams.playerDelete);
 
-router.get('/getCurrentTeam/' , ctrlTeams.getCurrentTeam);
+router.get('/getCurrentTeam/' , ctrlTeams.getCurrentTeamTrial);
 router.put('/makeCurrentTeam/' , ctrlTeams.makeCurrentTeam);
 router.put('/updateCurrentTeam/:number' , ctrlTeams.updateCurrentTeam );
 

@@ -6,7 +6,7 @@ var playersSchema = new mongoose.Schema({
 
 var teamSchema = new mongoose.Schema({
 
-	teamNumber: {type: String , required: true},
+	teamNumber: {type: Number , required: true},
 	players: [playersSchema],
 
 });

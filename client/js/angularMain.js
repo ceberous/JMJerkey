@@ -1,20 +1,9 @@
 var teams = [];
 
-var team1 = {number: 1};
-var team2 = {number: 2};
-var team3 = {number: 3};
-var team4 = {number: 4};
-var team5 = {number: 5};
-var team6 = {number: 6};
-var team7 = {number: 7};
-var team8 = {number: 8};
-var team9 = {number: 9};
-var team10 = {number: 10};
-
 var app = angular.module('teamTrackerApp' , ['ui.router'])
 
 	.run(function($rootScope) {
-			$rootScope.teams = teams;
+			// $rootScope.teams = teams;
 	})
 
 	.config(['$stateProvider' , '$urlRouterProvider' , '$locationProvider' ,
@@ -36,12 +25,6 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 					controller: 'HomeCtrl'
 				})
 
-				.state('addPlayer' , {
-					url: '/api/1/:playerName',
-					templateUrl: 'views/home.html',
-					controller: 'HomeCtrl'
-				})
-
 			;
 
 		}
@@ -51,164 +34,115 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 
 	.controller('HomeCtrl' , ['$scope' , '$rootScope' , '$http' , function($scope , $rootScope , $http) {
 
+
 		$scope.newFirstName;
 		$scope.newLastName;
-		$scope.currentTeam = 0;
-
-		var getAllTeams = function() {
-
-			return $http.get('/api/teams/').success(function(data){
-				console.log(data);
-				$scope.teams = data;
-			});
-
-		};
-
-		$scope.teams = getAllTeams();
-
-		var getCurrentTeam = function() {
-
-			return $http.get('/api/getCurrentTeam/').success(function(data) {
-				$scope.currentTeam = data.currentTeam;
-				console.log('Current Team Pointer Now Set to := ' + $scope.currentTeam );
-			});
-
-		};
-
-		getCurrentTeam();
-
-
-		var updateCurrentTeam = function(currentTeamNumber) {
-
-			// Needs to create a new Team.object
-			$http.put('/api/teams/' + currentTeamNumber).success(function(data) {
-				getAllTeams();
-			});
-
-		};	
-
-		
-
-		$scope.submitNewPlayerTrial = function() {
-
-			console.log('Starting submitNewPlayerTrail()');
-
-			$http.get('/api/getCurrentTeam')
-				.success(function(data) {
-
-					$scope.currentTeam = data.currentTeam;
-
-					executePlayerAdd($scope.currentTeam);
-
-					// console.log('$scope.teams = ' + $scope.teams);
-					// console.log('$scope.currentTeam = ' + $scope.currentTeam);
-					// console.log('GET /api/getCurrentTeam returns : \n' + data);
-
-					/*
-					return $http.put('/api/teams' + data.currentTeam + '/' + newName)
-						.success(function(data) {
-							getAllTeams();
-						})
-					;
-					*/
-
-
-				})
-			;
-
-		};
-
-		var executePlayerAdd = function( currentTeam ) {
-			console.log(currentTeam);
-			var workingTeam = currentTeam - 1; 
-			console.log(workingTeam);
-
-			// If valid emptyTeam 
-			if ($scope.teams[workingTeam]) {
-				// console.log('Working TeamNumber = ' + $scope.teams[workingTeam].teamNumber);
-
-				var workingTeamPlayers = $scope.teams[workingTeam].players
-
-				if (workingTeamPlayers.length <= 4) {
-					var newName = $scope.newFirstName + ' ' + $scope.newLastName;
-					$scope.newFirstName = '';
-					$scope.newLastName = '';
-
-					$http.put('/api/teams/' + currentTeam + '/' + newName )
-						.success(function(data) {
-							console.log(data);
-							getAllTeams();
-						})
-					;			
-
-				} 
-				else {
-					// index $scope.currentTeam
-					var i = $scope.currentTeam + 1;
-					$http.put('/api/updateCurrentTeam/' + i).success(function(data) {
-						console.log('DATA Object Returned from $http.put(/api/updateCurrentTeam/)\n\t' + data.currentTeam);
-						
-
-
-					});
-				}
-			}
-			else {
-				// Create an Empty Team and fill $scoped  newName? 
-				$http.put('/api/teams/' + currentTeam).success(function(data) {
-
-					var newName = $scope.newFirstName + ' ' + $scope.newLastName;
-					$scope.newFirstName = '';
-					$scope.newLastName = '';
-
-					$http.put('/api/teams/' + currentTeam + '/' + newName )
-						.success(function(data) {
-							console.log(data);
-							getAllTeams();
-						})
-					;
-
-
+		$scope.isAdmin = false;
+	
+		// HELPER FUNCTIONS
+		// ==============================================
+			var getAllTeams = function() {
+				$http.get('/api/teams').success(function(data) {
+					$scope.teams = data;
+					if ($scope.teams.length < 1) {createNewTeam(1);}
+					console.log('Current Total Teams = ' + $scope.teams.length);
 				});
-			}
-			/*
-			console.log('Players of Working TeamNumber = ');
-			workingTeamPlayers.forEach(function(i) {
-				console.log('\t' + i.player);
-			});
-			*/
+			};
 
-		};	
-		
+			var getAllTeamsWithAddPlayer = function(newName) {
+				$http.get('/api/teams').success(function(data) {
+					$scope.teams = data;
+					addPlayer(newName);
+				});
+			};
 
+			var addPlayer = function(newName) {
+				var totalTeams = $scope.teams.length;
+				var currentTeam = $scope.teams[totalTeams - 1];
+				var i = totalTeams + 1;
+				if (currentTeam.players.length < 5) {
+					$http.put('/api/teams/' + totalTeams + '/' + newName).success(function(data) {
+						$scope.newFirstName = '';
+						$scope.newLastName = '';
+						getAllTeams();
+					});
+				} else {
+					// Make Blank Team
+					createNewTeamWithPlayerAdd( i , newName);
+				}
 
-		$scope.submitNewPlayer = function() {
+			};
 
-			$scope.teamNumber = getCurrentTeam();
+			var createNewTeamWithPlayerAdd = function( i , newName) {
+				$http.put('/api/teams/' + i).success(function(data) {
+					getAllTeamsWithAddPlayer(newName);
+				});
+			};
 
-			var newName = $scope.newFirstName + ' ' + $scope.newLastName;
-
-			$scope.newFirstName = '';
-			$scope.newLastName = '';
-
-			$http.put('/api/teams/' + $scope.teamNumber + '/' + newName )
-				.success(function(data) {
-					console.log(data);
+			var createNewTeam = function(i) {
+				$http.put('/api/teams/' + i).success(function(data) {
 					getAllTeams();
-				})
-			;
-		
-		};
+				});
+			};	
+
+			var getNewName = function( newFirstName , newLastName ) {
+				if (newFirstName && newLastName) {
+					return newLastName + ' ' + newLastName;
+				}
+				else if (newFirstName && !newLastName) {
+					return newFirstName;
+				}
+				else if (newLastName && !newFirstName ) {
+					return newLastName;
+				}
+
+			};
+		// =========== END HELPERS ======================
+
+		// Grab all the Current Teams for the Inital View
+		getAllTeams();
 
 
-		$scope.deleteTeam = function(teamNumber) {
+		// CALLABLE VIEW FUNCTIONS
+		// ==============================================
+			$scope.submitNewPlayer = function(newFirstName , newLastName) {
+				if (newFirstName === 'admin') {
+					$scope.isAdmin = true;
+					$scope.newFirstName = '';
+				} else if (newFirstName === 'back')  {
+					$scope.isAdmin = false;
+					$scope.newFirstName = '';
+				}
+				else {
 
-			$http.delete('/api/teams/' + teamNumber).success(function (data) {
-				console.log(data);
-				getAllTeams();
-			});
+					var newName = getNewName(newFirstName , newLastName);
+				
+					if (newName) {
+						console.log('Sumbitted Player Name = ' + newName);
+						getAllTeamsWithAddPlayer(newName);
+					} 
+					else {
+						console.log('Need to Enter a Name Brah');
+					}	
 
-		};
+				}		
+
+			};
+
+			$scope.deleteTeam = function ( teamNumber ) {
+				$http.delete('/api/teams/' + teamNumber ).success(function (data) {
+					getAllTeams();
+				});
+			};	
+
+			$scope.deletePlayer = function( teamNumber , playerID ) {
+				$http.delete('/api/teams/' + teamNumber + '/' + playerID ).success(function(data) {
+					getAllTeams();
+				});
+			};
+
+		// =========== END VIEW FUNCTIONS ===============
+
 
 		
 	}])
