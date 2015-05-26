@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "main": "www.js",
-  "start": "www.js",
+  "start": "node www.js",
   "engines": {
     "node": "*",
     "npm": "*"
