@@ -5,8 +5,8 @@
   "main": "www.js",
   "start": "node www.js",
   "engines": {
-    "node": "*",
-    "npm": "*"
+    "node": "0.12.3",
+    "npm": "2.10.1"
   },
   "dependencies": {
     "body-parser": "~1.8.1",
