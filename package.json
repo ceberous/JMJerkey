@@ -2,12 +2,7 @@
   "name": "TeamPoolTest4",
   "version": "0.0.1",
   "private": true,
-  "scripts": {
-    "start": "node ./bin/www"
-  },
-  "main": {
-    "./bin/www"
-  }
+  "main": "www.js",
   "engines": {
     "node": "*",
     "npm": "*"
@@ -26,5 +21,3 @@
     "serve-favicon": "~2.1.3"
   }
 }
-
-
