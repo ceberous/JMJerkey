@@ -87,7 +87,7 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 
 			var getNewName = function( newFirstName , newLastName ) {
 				if (newFirstName && newLastName) {
-					return newLastName + ' ' + newLastName;
+					return newFirstName + ' ' + newLastName;
 				}
 				else if (newFirstName && !newLastName) {
 					return newFirstName;
