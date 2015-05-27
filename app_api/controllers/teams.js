@@ -5,7 +5,7 @@ var Stats = mongoose.model('Stats');
 
 // API CONIFG
 // ===================================
-	var request = require('request');
+	// var request = require('request');
 	var apiOptions = {
 		server: "http://localhost:3000"
 	};
@@ -13,22 +13,8 @@ var Stats = mongoose.model('Stats');
 		// apiOptions.server = "https:/getting-mean-loc8r.herokuapp.com";
 	}
 
-	var requestOptions = {
-		url: 'http://yourapi.com/api/path',
-		method: "GET",
-		json: {},
-		qs: {
-			offset: 20
-		}
-	};
 
-	request( requestOptions , function( err , response , body ) {
 
-		if (err) {console.log(err);}
-		else if (response.statusCode === 200) {console.log(body);}
-		else {console.log(response.statusCode);}
-
-	});
 // ======== END API ==================
 
 

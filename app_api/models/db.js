@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var gracefulShutdown;
 // var dbURI = 'mongodb://localhost/TeamPoolTest4';
-var dbURI = 'mongodb://admin:lamorsa2372@proximus.modulusmongo.net:27017/aji2xyBo';
+var dbURI = 'mongodb://admin:lamorsa2372@proximus.modulusmongo.net:27017/mitA2guz';
 if (process.env.NODE_ENV === 'production') {
     dbURI = process.env.MONGOLAB_URI;
 }
