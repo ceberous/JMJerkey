@@ -13,6 +13,7 @@ router.delete('/teams/:teamNumber' , ctrlTeams.deleteTeam);
 
 
 router.put('/teams/:teamNumber/:newPlayer' , ctrlTeams.playerCreate);
+router.put('/teams/update/:teamNumber/:playerID/:newName' , ctrlTeams.editPlayer);
 router.delete('/teams/:teamNumber/:playerID' , ctrlTeams.playerDelete);
 
 router.get('/getCurrentTeam/' , ctrlTeams.getCurrentTeamTrial);

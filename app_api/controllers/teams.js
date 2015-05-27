@@ -169,6 +169,38 @@ module.exports.playerCreate = function( req , res ) {
 
 };
 
+module.exports.editPlayer = function( req , res ) {
+
+	var teamNumber = req.params.teamNumber;
+	var playerID = req.params.playerID;
+	var newName = req.params.newName;
+
+	Team.findOne({teamNumber: teamNumber})
+		.exec(function(err , team) {
+			console.log('Found Team : ');
+			console.log(team);
+			
+			var player = team.players.id(playerID);
+			console.log('editing playerID: ' + playerID);
+			console.log('with name: ' + player.player );
+			player.player = newName;
+			
+			team.save(function( err ) {
+				if (err) {sendJSONResponse(res , 404 , err);}
+				else {
+					
+					Team.find({} , function( err , teams ){
+						sendJSONResponse( res , 200 , teams);
+					});
+					
+				}
+			});
+	
+		})
+	;
+
+};	
+
 module.exports.playerDelete = function( req , res ) {
 
 	var teamNumber = req.params.teamNumber;

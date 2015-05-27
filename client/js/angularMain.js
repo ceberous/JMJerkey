@@ -73,6 +73,12 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 
 			};
 
+			var editPlayerHelper = function(teamNumber , playerID , newName) {
+				$http.put('/api/teams/update/' + teamNumber + '/' + playerID + '/' + newName).success(function(data) {
+					$scope.teams = data;
+				});
+			};
+
 			var createNewTeamWithPlayerAdd = function( i , newName) {
 				$http.put('/api/teams/' + i).success(function(data) {
 					getAllTeamsWithAddPlayer(newName);
@@ -95,6 +101,10 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 				else if (newLastName && !newFirstName ) {
 					return newLastName;
 				}
+
+			};
+
+			var getAllTeamsWithEditPlayer = function(newName) {
 
 			};
 		// =========== END HELPERS ======================
@@ -139,6 +149,29 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 				$http.delete('/api/teams/' + teamNumber + '/' + playerID ).success(function(data) {
 					getAllTeams();
 				});
+			};
+
+			$scope.editPlayer = function( teamNumber , playerID ) {
+				if ($scope.newFirstName === 'admin') {
+					$scope.isAdmin = true;
+					$scope.newFirstName = '';
+				} else if ($scope.newFirstName === 'back')  {
+					$scope.isAdmin = false;
+					$scope.newFirstName = '';
+				}
+				else {
+
+					var newName = getNewName($scope.newFirstName , $scope.newLastName);
+				
+					if (newName) {
+						console.log('Sumbitted Player Name = ' + newName);
+						editPlayerHelper(teamNumber , playerID , newName);
+					} 
+					else {
+						console.log('Need to Enter a Name Brah');
+					}	
+
+				}					
 			};
 
 		// =========== END VIEW FUNCTIONS ===============

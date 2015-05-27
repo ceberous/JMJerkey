@@ -4,7 +4,7 @@
 <div style="background-color: white;" class="home">
 
 	<h1 class="text-center">Team Pool</h1>
-	<h2 ng-if="isAdmin" class="text-center" style="color: red;">Admin Mode (type "back" to return</h2>
+	<h2 ng-if="isAdmin" class="text-center" style="color: red;">Admin Mode (type "back" to return)</h2>
 
 	<div class="row">
 		<div class="col-xs-12">
@@ -35,7 +35,9 @@
 				
 				<ul>
 					<li ng-repeat="player in team.players">
-						{{player.player}} <span ng-if="isAdmin" class="glyphicon glyphicon-trash" ng-click="deletePlayer( team.teamNumber , player._id)"></span>
+						<span class="text-center">{{player.player}}</span> 
+						<span ng-if="isAdmin" class="glyphicon glyphicon-trash" ng-click="deletePlayer( team.teamNumber , player._id)"></span>
+						<span ng-if="isAdmin" class="glyphicon glyphicon-pencil" ng-click="editPlayer( team.teamNumber , player._id)"></span>						
 					</li>
 				</ul>
 			</div>
