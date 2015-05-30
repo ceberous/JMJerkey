@@ -5,14 +5,12 @@
  	<meta name="viewport" content="width=device-width, initial-scale=1">
  	<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
  	<link rel="stylesheet" type="text/css" href="./css/style.css">
-  <link rel="stylesheet" href="http://www.jacklmoore.com/colorbox/example1/colorbox.css" />
  	<script type="text/javascript" src="./js/angular.min.js"></script>
  	<script type="text/javascript" src="./js/angular-resource.min.js"></script>
  	<script type="text/javascript" src="./js/angular-ui-router.js"></script>
  	<script type="text/javascript" src="./js/jquery.min.js"></script>
  	<script type="text/javascript" src="./js/bootstrap.min.js"></script>
  	<script type="text/javascript" src="./js/angularMain.js"></script>
-  <script src="http://www.jacklmoore.com/colorbox/jquery.colorbox.js"></script>
  </head>
 
 <body ng-app="teamTrackerApp" id="rootScope">
@@ -47,10 +45,10 @@
         </div>
         <div class="navbar-collapse collapse sidebar-navbar-collapse">
 
-        	<ul class="nav navbar-nav" ng-repeat="readyTeam in teams">
+        	<ul class="nav navbar-nav" ng-repeat="team in teams">
 
 	            <li>
-	            	<a ui-sref="team{{readyTeam.number}}">Team Number - {{readyTeam.number}}</a>
+	            	<a ui-sref="team{{team.teamNumber}}">Team Number - {{team.teamNumber}}</a>
 	            </li>
 
         	</ul>
@@ -69,7 +67,7 @@
 
 $(document).ready(function() {
 
- $.colorbox({html:"<h1>Welcome</h1><br><h2>type 'admin' into first name and 'back' to return </h2> <h3> Needs: socket.io , passport , and glitch fixing"});
+
 
 });
 

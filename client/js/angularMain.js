@@ -37,6 +37,7 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 
 		$scope.newFirstName;
 		$scope.newLastName;
+		$scope.NPTeamNumber;
 		$scope.isAdmin = false;
 	
 		// HELPER FUNCTIONS
@@ -44,30 +45,76 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 			var getAllTeams = function() {
 				$http.get('/api/teams').success(function(data) {
 					$scope.teams = data;
-					if ($scope.teams.length < 1) {createNewTeam(1);}
+
+					if ($scope.teams.length < 1) {createNewTeam(1); return;}
 					console.log('Current Total Teams = ' + $scope.teams.length);
+
+					var localTeams = $scope.teams;
+					var workingTeam;
+					var i=0;
+					while (i < localTeams.length) {
+						if (localTeams[i].players) {
+							if (localTeams[i].players.length < 5) {
+								workingTeam = localTeams[i];
+								console.log('workingTeamNumber = ' + workingTeam.teamNumber);
+								$scope.NPTeamNumber = workingTeam.teamNumber;
+								break;
+							} 
+						}
+						i = i + 1;
+					}
+
+					
+
 				});
 			};
 
 			var getAllTeamsWithAddPlayer = function(newName) {
 				$http.get('/api/teams').success(function(data) {
 					$scope.teams = data;
-					addPlayer(newName);
+					var workingTeam;
+					var workingTeamNumber = $scope.teams.length;
+
+					if ($scope.teams[workingTeamNumber-1].players >= 5) {
+						var i = workingTeamNumber + 1;
+						createNewTeamWithPlayerAdd( i , newName);
+					}
+
+					var localTeams = $scope.teams;
+					var i=0;					
+					while (i < localTeams.length) {
+						if (localTeams[i].players) {
+							if (localTeams[i].players.length < 5) {
+								workingTeam = localTeams[i];
+								workingTeamNumber = workingTeam.teamNumber;
+								console.log('workingTeamNumber = ' + workingTeam.teamNumber);
+								break;
+							}
+							break; 
+						}
+						i = i + 1;
+					}
+					
+					addPlayer(newName , workingTeamNumber);
 				});
 			};
 
-			var addPlayer = function(newName) {
+			var addPlayer = function(newName , workingTeamNumber ) {
 				var totalTeams = $scope.teams.length;
+				
 				var currentTeam = $scope.teams[totalTeams - 1];
 				var i = totalTeams + 1;
+				console.log('Trying to Add Player : ' + newName + 'to Team #: ' + workingTeamNumber);
 				if (currentTeam.players.length < 5) {
-					$http.put('/api/teams/' + totalTeams + '/' + newName).success(function(data) {
+					$http.put('/api/teams/' + workingTeamNumber + '/' + newName).success(function(data) {
 						$scope.newFirstName = '';
 						$scope.newLastName = '';
 						getAllTeams();
 					});
 				} else {
 					// Make Blank Team
+					console.log('Team #: ' + workingTeamNumber + ' was too full');
+					console.log('Making new Team #: ' + i);
 					createNewTeamWithPlayerAdd( i , newName);
 				}
 
@@ -128,7 +175,7 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 					var newName = getNewName(newFirstName , newLastName);
 				
 					if (newName) {
-						console.log('Sumbitted Player Name = ' + newName);
+						console.log('Submitted Player Name = ' + newName);
 						getAllTeamsWithAddPlayer(newName);
 					} 
 					else {
@@ -138,12 +185,6 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 				}		
 
 			};
-
-			$scope.deleteTeam = function ( teamNumber ) {
-				$http.delete('/api/teams/' + teamNumber ).success(function (data) {
-					getAllTeams();
-				});
-			};	
 
 			$scope.deletePlayer = function( teamNumber , playerID ) {
 				$http.delete('/api/teams/' + teamNumber + '/' + playerID ).success(function(data) {
@@ -164,7 +205,7 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 					var newName = getNewName($scope.newFirstName , $scope.newLastName);
 				
 					if (newName) {
-						console.log('Sumbitted Player Name = ' + newName);
+						console.log('Submitted Player Name = ' + newName);
 						editPlayerHelper(teamNumber , playerID , newName);
 					} 
 					else {
@@ -172,6 +213,22 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 					}	
 
 				}					
+			};
+
+			$scope.deleteTeam = function ( teamNumberID ) {
+				console.log('Sent from home.html , DELETE Team #ID: ' + teamNumberID);
+				$http.delete('/api/teams/' + teamNumberID ).success(function(data) {
+					getAllTeams();
+				});
+			};		
+
+			$scope.editTeam = function ( teamNumber ) {
+				var id = 'newTeam#' + teamNumber;
+				var newNumber = document.getElementById(id).value;
+				console.log('newTeamNuber should = ' + newNumber);
+				$http.put('/api/teams/' + teamNumber + '/edit/' + newNumber ).success(function(data) {
+					getAllTeams();
+				});
 			};
 
 		// =========== END VIEW FUNCTIONS ===============

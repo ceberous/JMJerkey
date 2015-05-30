@@ -93,22 +93,61 @@ module.exports.teamCreate = function( req , res ) {
 
 };
 
-module.exports.deleteTeam = function( req , res ) {
+module.exports.editTeam = function( req , res ) {
 
 	var teamNumber = req.params.teamNumber;
+	var newTeamNumber = req.params.newTeamNumber;
+
+	Team.findOne({})
+		.select({teamNumber: teamNumber})
+		.exec(function ( err , team ){
+			if (err) {sendJSONResponse( res , 400 , err );}
+			else {
+				if (team) {
+
+					team.teamNumber = newTeamNumber;
+
+					team.save(function( err , team ) {
+						// var thisTeam;
+						if (err) {sendJSONResponse( res , 404 , err );}
+						/*
+						else {
+							// thisTeam = team.players[team.players.length - 1];
+							// sendJSONResponse( res , 201 , team );
+						}
+						*/
+
+						Team.find({} , function( err , teams ){
+							sendJSONResponse( res , 200 , teams);
+						});
+
+					});
+
+				}
+				else {
+					sendJSONResponse( res , 200 , {'message': 'could not find team: ' + teamNumber });
+				}
+			}
+		})	
+	;
+
+};
+
+module.exports.deleteTeam = function( req , res ) {
+
+	var teamNumber = req.params.teamNumberID;
 
 	if (teamNumber) {
 
 		// HOLY GRAIL OF MONGOOSE FINDING .findOne({})
-		Team.findOne({}) 
-			.select({teamNumber: teamNumber})
+		Team.findOne({_id: teamNumber})
 			.exec(function( err , team ) {
 				if (err) {sendJSONResponse(res , 400 , err);}
 				else {
 					if (team) {
-						var teamNum = team.teamNumber;
-						console.log('Team found thats about to be deleted = ');
+						console.log('About To Delete Team = ');
 						console.log(team);
+						var teamNum = team.teamNumber;
 						team.remove(function (err) {
 							if (err) {console.log(err);}
 							else {

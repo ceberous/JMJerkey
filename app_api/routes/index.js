@@ -8,8 +8,9 @@ var ctrlTeams = require('../controllers/teams');
 router.get('/teams' , ctrlTeams.getAllTeams);
 
 router.put('/teams/:teamNumber/' , ctrlTeams.teamCreate);
+router.put('/teams/:teamNumber/edit/:newTeamNumber' , ctrlTeams.editTeam);
 router.get('/teams/:teamNumber' , ctrlTeams.getTeamNumber);
-router.delete('/teams/:teamNumber' , ctrlTeams.deleteTeam);
+router.delete('/teams/:teamNumberID' , ctrlTeams.deleteTeam);
 
 
 router.put('/teams/:teamNumber/:newPlayer' , ctrlTeams.playerCreate);
