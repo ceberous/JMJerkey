@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var gracefulShutdown;
-// var dbURI = 'mongodb://localhost/TeamPoolTest4';
-var dbURI = 'mongodb://root:wuviqor6Yp@proximus.modulusmongo.net:27017/yDap8ytu';
+var dbURI = 'mongodb://localhost/PersonalFinanceApp';
+// var dbURI = 'mongodb://root:wuviqor6Yp@proximus.modulusmongo.net:27017/yDap8ytu';
 
 
 mongoose.connect(dbURI);
@@ -20,5 +20,6 @@ mongoose.connection.on('disconnected', function() {
 
 
 // BRING IN YOUR SCHEMAS & MODELS
-require('./teams');
-require('./stats');
+require('./expenses');
+require('./income');
+require('./categories');

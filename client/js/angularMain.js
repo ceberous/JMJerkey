@@ -1,6 +1,6 @@
 var teams = [];
 
-var app = angular.module('teamTrackerApp' , ['ui.router'])
+var app = angular.module('personalFinanceApp' , ['ui.router'])
 
 	.run(function($rootScope) {
 			// $rootScope.teams = teams;
@@ -25,6 +25,18 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 					controller: 'HomeCtrl'
 				})
 
+				.state('newExpense' , {
+					url: '/',
+					templateUrl: 'views/newExpense.html',
+					controller: 'NewExpenseCtrl'
+				})
+
+				.state('newIncome' , {
+					url: '/',
+					templateUrl: 'views/newIncome.html',
+					controller: 'NewIncomeCtrl'
+				})
+
 			;
 
 		}
@@ -34,6 +46,14 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 
 	.controller('HomeCtrl' , ['$scope' , '$rootScope' , '$http' , function($scope , $rootScope , $http) {
 
+		$scope.welcomeMessage = 'Personal Finance App';
+		$scope.totalDeductions;
+		$scope.totalIncome;
+		$scope.finalMonthNet;
+		$scope.editingStatus = false;
+		$scope.editingVariable;
+		$scope.showExpenses = false;
+		$scope.categories;
 
 		$scope.newFirstName;
 		$scope.newLastName;
@@ -45,11 +65,11 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 			var getAllTeams = function() {
 				$http.get('/api/teams').success(function(data) {
 					$scope.teams = data;
+					var localTeams = $scope.teams;
 
 					if ($scope.teams.length < 1) {createNewTeam(1); return;}
 					console.log('Current Total Teams = ' + $scope.teams.length);
-
-					var localTeams = $scope.teams;
+					
 					var workingTeam;
 					var i=0;
 					while (i < localTeams.length) {
@@ -65,7 +85,13 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 					}
 
 					
+				});
+			};
 
+			var getAllCategories = function() {
+				$http.get('/api/allCategories').success(function(data) {
+					console.log(data);
+					$scope.categories = data;
 				});
 			};
 
@@ -154,10 +180,39 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 			var getAllTeamsWithEditPlayer = function(newName) {
 
 			};
+
+			var getAllExpenses = function() {
+				$http.get('/api/expenses').success(function(data) {
+					$scope.expenses = data;
+					var i = 0;
+					var total;
+					while(i < data.length) {
+						console.log('data['+i+'].amount = ' + data[i].amount);
+						console.log(parseFloat(data[i].amount));
+						total = total + parseInt(data[i].amount);
+						i = i + 1;
+					}
+					$scope.totalDeductions = total;
+					console.log('Total Deductions = ' + total);
+					toggleShowExpensesHelper2();
+					
+				});
+			};
+
+			var toggleShowExpensesHelper2 = function() {
+				var tempBool = !$scope.showExpenses;
+				$scope.showExpenses = tempBool;
+				getAllCategories();
+			}
+
+			var toggleShowExpensesHelper = function() {
+				var tempBool = !$scope.showExpenses;
+				$scope.showExpenses = tempBool;
+			}
 		// =========== END HELPERS ======================
 
 		// Grab all the Current Teams for the Inital View
-		getAllTeams();
+		// getAllTeams();
 
 
 		// CALLABLE VIEW FUNCTIONS
@@ -231,13 +286,92 @@ var app = angular.module('teamTrackerApp' , ['ui.router'])
 				});
 			};
 
+
+
+			$scope.getAllExpenses = function() {
+				getAllExpenses();
+			};
+
+
+			$scope.deleteExpenseID = function(expenseID) {
+				$http.delete('/api/expenses/deleteID/' + expenseID).success(function(data) {
+					getAllExpenses();
+				});
+			};
+
+			$scope.toggleEditingStatus = function() {
+				var tempBool = !$scope.editingStatus;
+				if (tempBool) {$scope.welcomeMessage = 'New Expense Category';}
+				else {$scope.welcomeMessage = 'Personal Finance App';}
+				$scope.editingStatus = tempBool;
+			};
+
+			$scope.toggleShowExpenses = function() {
+				toggleShowExpensesHelper();
+			};
+
+			$scope.newExpenseCategory = function() {
+				var input = document.getElementById('editingInput').value;
+				$http.put('/api/newExpenseCategory/' + input).success(function(data){
+					console.log('Added New Category : ' + input);
+
+				});
+			};
 		// =========== END VIEW FUNCTIONS ===============
 
-
+		getAllExpenses();
 		
 	}])
 
+	.controller('NewExpenseCtrl' , ['$scope' , '$rootScope' , '$http' , '$state' , function($scope , $rootScope , $http , $state) {
 
+		$scope.newExpenseName;
+		$scope.newExpenseAmount;
+		$scope.reoccuring = false;
+		$scope.newExpenseCategory;
+		$scope.weekly = false;
+		$scope.biweekly = false;
+		$scope.monthly = false;
+
+		var getAllCategories = function() {
+			$http.get('/api/allCategories').success(function(data) {
+				$scope.categories = data;
+			});
+		};
+
+		getAllCategories();
+
+		$scope.addNewExpense = function() {
+
+			var dueDateDay = document.getElementById('dueDateDayID').value;
+			// var dueDateMonth = document.getElementById('dueDateMonthID').value;
+
+			var localCategory = document.getElementById('newExpenseCategoryID').value;
+
+			var goHome = function() {
+				$state.go('home');
+			}
+
+			var bool = $scope.reoccuring.toString();
+
+			$http.put('/api/newExpense/' + $scope.newExpenseName + '/' + $scope.newExpenseAmount + '/' + bool + '/' + dueDateDay + '/' + localCategory)
+				.success(function(data) {
+					console.log('Back in /api/newExpense .success()');
+					goHome();
+				})
+			;
+			
+		};
+
+	}])	
+
+	.controller('NewIncomeCtrl' , ['$scope' , '$rootScope' , '$http' , function($scope , $rootScope , $http) {
+
+		$scope.addNewIncome = function() {
+
+		};
+
+	}])	
 
 ;
 
