@@ -44,6 +44,25 @@ module.exports.newIncome = function( req , res ) {
 	);	
 };
 
+module.exports.editIncome = function( req , res ) {
+	Income.findById(req.params.incomeID)
+		.exec(function(err , income) {
+			income.name = req.params.name;
+			income.amount = req.params.amount;
+			income.reoccuring = req.params.reoccuring;
+			income.dueDay = req.params.day;
+
+			income.save(function( err , income ) {
+				if (err) {sendJSONResponse( res , 404 , err );}
+
+				sendJSONResponse( res , 200 , income);
+
+			});
+
+		})
+	;	
+};
+
 module.exports.deleteIncome = function( req , res ) {
 	Income.findByIdAndRemove(req.params.incomeID)
 		.exec(function( err , income) {

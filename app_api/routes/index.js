@@ -19,7 +19,9 @@ router.delete('/deleteExpenseCategory/:categoryID' , expenseCtrl.deleteCategory)
 // incomes
 router.get('/getAllIncomes' , incomeCtrl.getAllIncomes);
 router.put('/addNewIncome/:name/:amount/:reoccuring/:day' , incomeCtrl.newIncome);
+router.put('/editIncome/:incomeID/:name/:amount/:reoccuring/:day' , incomeCtrl.editIncome);
 router.delete('/deleteIncome/:incomeID' , incomeCtrl.deleteIncome);
+
 
 module.exports = router;
 

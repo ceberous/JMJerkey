@@ -81,7 +81,7 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 				var q = 0;
 				var localTotal = [];
 				while( q < expenses.length ) {
-					localTotal.push(parseFloat(expenses[q].amount.toString()));
+					localTotal.push(expenses[q].amount);
 					q = q + 1;
 				}
 				$scope.totalDeductions = eval(localTotal.join('+'));
@@ -213,16 +213,25 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 			};
 
 			$scope.toggleEditingCategoryName = function(categoryID) {
-				$('')
 				$("#"+categoryID+"\"").toggleClass('hidden');
 				toggleEditingCategoryName(categoryID);
 			};
 
 			$scope.editExpenseCategory = function(categoryID) {
+				var localCategory = $.grep($scope.categories , function(e) {
+					return e._id == categoryID;
+				});
 
-				$http.put('/api/editExpenseCategory/' + categoryID + '/' + $scope.newCategoryNameInput ).success(function(data){
-					$scope.newCategoryNameInput = ' ';
-					toggleEditingCategoryName();
+				$scope.editCategoryModalID = categoryID;
+				$scope.editCategoryModalName = localCategory[0].name;
+
+
+				$("#myCategoryModal").modal('show');
+
+			};
+
+			$scope.saveEditExpenseCategory = function() {
+				$http.put('/api/editExpenseCategory/' + $scope.editCategoryModalID + '/' + $scope.editCategoryModalName).success(function(data){
 					getAllCategories();
 				});
 			};
@@ -322,6 +331,32 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 					getAllIncomes();
 				})
 			;
+		};
+
+		$scope.editIncomeID = function(incomeID) {
+				var localIncome = $.grep($scope.allIncomes , function(e) {
+					return e._id == incomeID;
+				});
+
+				$scope.editIncomeModalID = incomeID;
+				$scope.editIncomeModalName = localIncome[0].name;
+				$scope.editIncomeModalAmount = localIncome[0].amount;
+				$scope.editIncomeModalReoccuring = localIncome[0].reoccuring;
+				$scope.editIncomeModalDueDay = localIncome[0].dueDay;
+
+				$("#myIncomeModal").modal('show');			
+		};
+
+		$scope.saveEditIncome = function() {
+			var day = document.getElementById('dueDateDayID').value;
+
+			$http.put('/api/editIncome/' + $scope.editIncomeModalID  + '/' + $scope.editIncomeModalName + '/' + $scope.editIncomeModalAmount + '/' + $scope.editIncomeModalReoccuring + '/' + day).success(function(data){
+				$scope.newIncomeName = '';
+				$scope.newIncomeAmount = null;
+				$scope.reoccuring = false;
+				document.getElementById('dueDateDayID').value = 1;
+				getAllIncomes();
+			});				
 		};
 
 		$scope.deleteIncomeID = function(incomeID) {
