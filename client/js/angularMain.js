@@ -47,47 +47,21 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 	.controller('HomeCtrl' , ['$scope' , '$rootScope' , '$http' , function($scope , $rootScope , $http) {
 
 		$scope.welcomeMessage = 'Personal Finance App';
-		$scope.totalDeductions;
-		$scope.totalIncome;
-		$scope.finalMonthNet;
+
 		$scope.editingStatus = false;
 		$scope.editingVariable;
 		$scope.showExpenses = false;
 		$scope.categories;
+		$scope.newCategoryName;
+		$scope.newCategoryNameInput;
+		$scope.editingCategoryNameBool = false;
 
-		$scope.newFirstName;
-		$scope.newLastName;
-		$scope.NPTeamNumber;
-		$scope.isAdmin = false;
+		$scope.totalDeductions;
+		$scope.totalIncome;
+		$scope.finalMonthNet;
 	
 		// HELPER FUNCTIONS
 		// ==============================================
-			var getAllTeams = function() {
-				$http.get('/api/teams').success(function(data) {
-					$scope.teams = data;
-					var localTeams = $scope.teams;
-
-					if ($scope.teams.length < 1) {createNewTeam(1); return;}
-					console.log('Current Total Teams = ' + $scope.teams.length);
-					
-					var workingTeam;
-					var i=0;
-					while (i < localTeams.length) {
-						if (localTeams[i].players) {
-							if (localTeams[i].players.length < 5) {
-								workingTeam = localTeams[i];
-								console.log('workingTeamNumber = ' + workingTeam.teamNumber);
-								$scope.NPTeamNumber = workingTeam.teamNumber;
-								break;
-							} 
-						}
-						i = i + 1;
-					}
-
-					
-				});
-			};
-
 			var getAllCategories = function() {
 				$http.get('/api/allCategories').success(function(data) {
 					console.log(data);
@@ -95,108 +69,24 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 				});
 			};
 
-			var getAllTeamsWithAddPlayer = function(newName) {
-				$http.get('/api/teams').success(function(data) {
-					$scope.teams = data;
-					var workingTeam;
-					var workingTeamNumber = $scope.teams.length;
-
-					if ($scope.teams[workingTeamNumber-1].players >= 5) {
-						var i = workingTeamNumber + 1;
-						createNewTeamWithPlayerAdd( i , newName);
-					}
-
-					var localTeams = $scope.teams;
-					var i=0;					
-					while (i < localTeams.length) {
-						if (localTeams[i].players) {
-							if (localTeams[i].players.length < 5) {
-								workingTeam = localTeams[i];
-								workingTeamNumber = workingTeam.teamNumber;
-								console.log('workingTeamNumber = ' + workingTeam.teamNumber);
-								break;
-							}
-							break; 
-						}
-						i = i + 1;
-					}
-					
-					addPlayer(newName , workingTeamNumber);
-				});
-			};
-
-			var addPlayer = function(newName , workingTeamNumber ) {
-				var totalTeams = $scope.teams.length;
-				
-				var currentTeam = $scope.teams[totalTeams - 1];
-				var i = totalTeams + 1;
-				console.log('Trying to Add Player : ' + newName + 'to Team #: ' + workingTeamNumber);
-				if (currentTeam.players.length < 5) {
-					$http.put('/api/teams/' + workingTeamNumber + '/' + newName).success(function(data) {
-						$scope.newFirstName = '';
-						$scope.newLastName = '';
-						getAllTeams();
-					});
-				} else {
-					// Make Blank Team
-					console.log('Team #: ' + workingTeamNumber + ' was too full');
-					console.log('Making new Team #: ' + i);
-					createNewTeamWithPlayerAdd( i , newName);
-				}
-
-			};
-
-			var editPlayerHelper = function(teamNumber , playerID , newName) {
-				$http.put('/api/teams/update/' + teamNumber + '/' + playerID + '/' + newName).success(function(data) {
-					$scope.teams = data;
-				});
-			};
-
-			var createNewTeamWithPlayerAdd = function( i , newName) {
-				$http.put('/api/teams/' + i).success(function(data) {
-					getAllTeamsWithAddPlayer(newName);
-				});
-			};
-
-			var createNewTeam = function(i) {
-				$http.put('/api/teams/' + i).success(function(data) {
-					getAllTeams();
-				});
-			};	
-
-			var getNewName = function( newFirstName , newLastName ) {
-				if (newFirstName && newLastName) {
-					return newFirstName + ' ' + newLastName;
-				}
-				else if (newFirstName && !newLastName) {
-					return newFirstName;
-				}
-				else if (newLastName && !newFirstName ) {
-					return newLastName;
-				}
-
-			};
-
-			var getAllTeamsWithEditPlayer = function(newName) {
-
-			};
-
 			var getAllExpenses = function() {
 				$http.get('/api/expenses').success(function(data) {
 					$scope.expenses = data;
-					var i = 0;
-					var total;
-					while(i < data.length) {
-						console.log('data['+i+'].amount = ' + data[i].amount);
-						console.log(parseFloat(data[i].amount));
-						total = total + parseInt(data[i].amount);
-						i = i + 1;
-					}
-					$scope.totalDeductions = total;
-					console.log('Total Deductions = ' + total);
-					toggleShowExpensesHelper2();
 					
+					getExpenseTotal(data);
 				});
+			};
+
+			var getExpenseTotal = function(expenses) {
+				var q = 0;
+				var localTotal = [];
+				while( q < expenses.length ) {
+					localTotal.push(parseFloat(expenses[q].amount.toString()));
+					q = q + 1;
+				}
+				$scope.totalDeductions = eval(localTotal.join('+'));
+				console.log('Total Deductions = ' + $scope.totalDeductions);
+				getAllIncomes();
 			};
 
 			var toggleShowExpensesHelper2 = function() {
@@ -208,90 +98,90 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 			var toggleShowExpensesHelper = function() {
 				var tempBool = !$scope.showExpenses;
 				$scope.showExpenses = tempBool;
-			}
-		// =========== END HELPERS ======================
+			};
 
-		// Grab all the Current Teams for the Inital View
-		// getAllTeams();
+			var toggleEditingStatusHelper = function() {
+				var tempBool = !$scope.editingStatus;
+				$scope.editingStatus = tempBool;
+				return;
+			};
+
+			var toggleEditingCategoryName = function() {
+				var tempBool = !$scope.editingCategoryNameBool;
+				$scope.editingCategoryNameBool = tempBool;
+				return;
+			};
+
+			var getAllIncomes = function() {
+				$http.get('/api/getAllIncomes').success(function(data){
+					$scope.allIncomes = data;
+		
+					getIncomeTotal(data);
+				});
+			};
+
+			var getIncomeTotal = function(incomes) {
+				var p = 0;
+				var localTotal = [];
+				while( p < incomes.length ) {
+					localTotal.push(parseFloat(incomes[p].amount.toString()));
+					p = p + 1;
+				}
+				$scope.totalIncome = eval(localTotal.join('+'));
+				console.log('Total Income = ' + $scope.totalIncome);
+				var formattedTotal = ($scope.totalIncome - $scope.totalDeductions).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+				$scope.finalMonthNet = formattedTotal;
+				return;
+			};			
+		// =========== END HELPERS ======================
 
 
 		// CALLABLE VIEW FUNCTIONS
-		// ==============================================
-			$scope.submitNewPlayer = function(newFirstName , newLastName) {
-				if (newFirstName === 'admin') {
-					$scope.isAdmin = true;
-					$scope.newFirstName = '';
-				} else if (newFirstName === 'back')  {
-					$scope.isAdmin = false;
-					$scope.newFirstName = '';
-				}
-				else {
-
-					var newName = getNewName(newFirstName , newLastName);
-				
-					if (newName) {
-						console.log('Submitted Player Name = ' + newName);
-						getAllTeamsWithAddPlayer(newName);
-					} 
-					else {
-						console.log('Need to Enter a Name Brah');
-					}	
-
-				}		
-
-			};
-
-			$scope.deletePlayer = function( teamNumber , playerID ) {
-				$http.delete('/api/teams/' + teamNumber + '/' + playerID ).success(function(data) {
-					getAllTeams();
-				});
-			};
-
-			$scope.editPlayer = function( teamNumber , playerID ) {
-				if ($scope.newFirstName === 'admin') {
-					$scope.isAdmin = true;
-					$scope.newFirstName = '';
-				} else if ($scope.newFirstName === 'back')  {
-					$scope.isAdmin = false;
-					$scope.newFirstName = '';
-				}
-				else {
-
-					var newName = getNewName($scope.newFirstName , $scope.newLastName);
-				
-					if (newName) {
-						console.log('Submitted Player Name = ' + newName);
-						editPlayerHelper(teamNumber , playerID , newName);
-					} 
-					else {
-						console.log('Need to Enter a Name Brah');
-					}	
-
-				}					
-			};
-
-			$scope.deleteTeam = function ( teamNumberID ) {
-				console.log('Sent from home.html , DELETE Team #ID: ' + teamNumberID);
-				$http.delete('/api/teams/' + teamNumberID ).success(function(data) {
-					getAllTeams();
-				});
-			};		
-
-			$scope.editTeam = function ( teamNumber ) {
-				var id = 'newTeam#' + teamNumber;
-				var newNumber = document.getElementById(id).value;
-				console.log('newTeamNuber should = ' + newNumber);
-				$http.put('/api/teams/' + teamNumber + '/edit/' + newNumber ).success(function(data) {
-					getAllTeams();
-				});
-			};
-
-
-
+		// ==============================================	
 			$scope.getAllExpenses = function() {
 				getAllExpenses();
 			};
 
+			$scope.editExpense = function(expenseID) {
+
+				var localExpense = $.grep($scope.expenses , function(e) {
+					return e._id == expenseID;
+				});
+
+				$scope.editExpenseModalID = expenseID;
+				$scope.editExpenseModalName = localExpense[0].name;
+				$scope.editExpenseModalAmount = localExpense[0].amount;
+				$scope.editExpenseModalReoccuring = localExpense[0].reoccuring;
+				$scope.editExpenseModalDueDay = localExpense[0].dueDay;
+				$scope.editExpenseModalCategory = localExpense[0].category;
+
+				$("#myModal").modal('show');
+
+				getAllCategories();
+
+			};
+
+			$scope.saveEditExpense = function() {
+
+				var day = document.getElementById('dueDateDayID').value;
+
+				var changes = {
+					name: $scope.editExpenseModalName,
+					amount: $scope.editExpenseModalAmount,
+					reoccuring: $scope.editExpenseModalReoccuring,
+					dueDay: day,
+					category: $scope.editExpenseModalCategory
+				};
+
+				$http.put('/api/editExpense/' + $scope.editExpenseModalID + 
+					'/' + changes.name + '/' + changes.amount + '/' + changes.reoccuring + 
+					'/' + changes.dueDay + '/' + changes.category)
+
+					.success(function(data){
+						getAllExpenses();
+					})
+				;
+			};
 
 			$scope.deleteExpenseID = function(expenseID) {
 				$http.delete('/api/expenses/deleteID/' + expenseID).success(function(data) {
@@ -304,6 +194,9 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 				if (tempBool) {$scope.welcomeMessage = 'New Expense Category';}
 				else {$scope.welcomeMessage = 'Personal Finance App';}
 				$scope.editingStatus = tempBool;
+				console.log('editingStatus = ' + tempBool);
+				console.log('getting categories .. .');
+				getAllCategories();
 			};
 
 			$scope.toggleShowExpenses = function() {
@@ -314,12 +207,35 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 				var input = document.getElementById('editingInput').value;
 				$http.put('/api/newExpenseCategory/' + input).success(function(data){
 					console.log('Added New Category : ' + input);
+					document.getElementById('editingInput').value = '';
+					getAllCategories();
+				});
+			};
 
+			$scope.toggleEditingCategoryName = function(categoryID) {
+				$('')
+				$("#"+categoryID+"\"").toggleClass('hidden');
+				toggleEditingCategoryName(categoryID);
+			};
+
+			$scope.editExpenseCategory = function(categoryID) {
+
+				$http.put('/api/editExpenseCategory/' + categoryID + '/' + $scope.newCategoryNameInput ).success(function(data){
+					$scope.newCategoryNameInput = ' ';
+					toggleEditingCategoryName();
+					getAllCategories();
+				});
+			};
+
+			$scope.deleteExpenseCategoryID = function(categoryID) {
+				$http.delete('/api/deleteExpenseCategory/' + categoryID).success(function(data){
+					getAllCategories();
 				});
 			};
 		// =========== END VIEW FUNCTIONS ===============
 
 		getAllExpenses();
+		getAllIncomes();
 		
 	}])
 
@@ -367,12 +283,57 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 
 	.controller('NewIncomeCtrl' , ['$scope' , '$rootScope' , '$http' , function($scope , $rootScope , $http) {
 
-		$scope.addNewIncome = function() {
+		$scope.allIncomes;
+		$scope.newIncomeName;
+		$scope.newIncomeAmount;
+		$scope.reoccuring = false;
+		$scope.positiveAmount;
 
+		var getAllIncomes = function() {
+			$http.get('/api/getAllIncomes').success(function(data){
+				$scope.allIncomes = data;
+	
+				getIncomeTotal(data);
+			});
 		};
 
-	}])	
+		var getIncomeTotal = function(incomes) {
+			var p = 0;
+			var localTotal = [];
+			while( p < incomes.length ) {
+				localTotal.push(parseFloat(incomes[p].amount.toString()));
+				p = p + 1;
+			}
+			$scope.positiveAmount = eval(localTotal.join('+'));
+			return;
+		};
 
+
+		$scope.addNewIncome = function() {
+
+			var day = document.getElementById('dueDateDayID').value;
+
+			$http.put('/api/addNewIncome/' + $scope.newIncomeName + '/' + $scope.newIncomeAmount + '/' + $scope.reoccuring + '/' + day)
+				.success(function(data){
+					$scope.newIncomeName = '';
+					$scope.newIncomeAmount = 0;
+					$scope.reoccuring = false;
+					document.getElementById('dueDateDayID').value = 1;
+					getAllIncomes();
+				})
+			;
+		};
+
+		$scope.deleteIncomeID = function(incomeID) {
+			$http.delete('/api/deleteIncome/' + incomeID).success(function(data){
+				getAllIncomes();
+			});
+		};
+
+		getAllIncomes();
+
+	}])	
+	
 ;
 
 

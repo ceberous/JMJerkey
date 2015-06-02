@@ -4,16 +4,24 @@
  	<title>Personal Finance App</title>
  	<meta name="viewport" content="width=device-width, initial-scale=1">
  	<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
- 	<link rel="stylesheet" type="text/css" href="./css/style.css">
+  <link rel="stylesheet" type="text/css" href="./css/style.css">
+ 	<link rel="stylesheet" type="text/css" href="./css/jquery.toolbar.css">
  	<script type="text/javascript" src="./js/angular.min.js"></script>
  	<script type="text/javascript" src="./js/angular-resource.min.js"></script>
   <script type="text/javascript" src="./js/angular-ui-router.js"></script>
- 	<script type="text/javascript" src="./js/jquery.min.js"></script>
+  <script type="text/javascript" src="./js/jquery.min.js"></script>
+ 	<script type="text/javascript" src="./js/jquery.toolbar.min.js"></script>
  	<script type="text/javascript" src="./js/bootstrap.min.js"></script>
  	<script type="text/javascript" src="./js/angularMain.js"></script>
  </head>
 
 <body ng-app="personalFinanceApp" id="rootScope">
+
+<div id="toolbar-options hidden">
+   <a href="#"><i class="fa fa-plane"></i></a>
+   <a href="#"><i class="fa fa-car"></i></a>
+   <a href="#"><i class="fa fa-bicycle"></i></a>
+</div>
 
 <div class="row visible-lg visible-md visible-sm">
 	
@@ -66,8 +74,6 @@
 <script type="text/javascript">
 
 $(document).ready(function() {
-
-  
 
 });
 

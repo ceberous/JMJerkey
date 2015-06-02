@@ -6,6 +6,11 @@ body {
     background-size: cover;         /* Generic*/
 }
 
+@media (max-width: 480px) { 
+  body {
+    font-size: 11px;
+  }
+}
 
 /* make sidebar nav vertical */ 
 @media (min-width: 768px) {
@@ -47,6 +52,10 @@ body {
 
   }
 
+}
+
+.hidden {
+  visibility: hidden;
 }
 
 .headLineTag h1 {
