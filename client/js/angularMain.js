@@ -1,5 +1,16 @@
 var teams = [];
 
+Number.prototype.formatMoney = function(c, d, t){
+var n = this, 
+    c = isNaN(c = Math.abs(c)) ? 2 : c, 
+    d = d == undefined ? "." : d, 
+    t = t == undefined ? "," : t, 
+    s = n < 0 ? "-" : "", 
+    i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "", 
+    j = (j = i.length) > 3 ? j % 3 : 0;
+   return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+ };
+
 var app = angular.module('personalFinanceApp' , ['ui.router'])
 
 	.run(function($rootScope) {
@@ -84,7 +95,8 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 					localTotal.push(expenses[q].amount);
 					q = q + 1;
 				}
-				$scope.totalDeductions = eval(localTotal.join('+'));
+				p = eval(localTotal.join('+'));
+				$scope.totalDeductions = (p).formatMoney(2);
 				console.log('Total Deductions = ' + $scope.totalDeductions);
 				getAllIncomes();
 			};
@@ -127,10 +139,14 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 					localTotal.push(parseFloat(incomes[p].amount.toString()));
 					p = p + 1;
 				}
-				$scope.totalIncome = eval(localTotal.join('+'));
-				console.log('Total Income = ' + $scope.totalIncome);
-				var formattedTotal = ($scope.totalIncome - $scope.totalDeductions).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-				$scope.finalMonthNet = formattedTotal;
+
+				p = parseFloat(eval(localTotal.join('+')));
+				$scope.totalIncome = (p).formatMoney(2);
+	
+				// var formattedTotal = ($scope.totalIncome - $scope.totalDeductions).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+				$scope.finalMonthNet = ($scope.totalIncome - $scope.totalDeductions).formatMoney(2);
+				console.log('$scope.finalMonthNet = ' + $scope.finalMonthNet);
+				if (!$scope.finalMonthNet) {$scope.finalMonthNet = 0;}
 				return;
 			};			
 		// =========== END HELPERS ======================
@@ -163,14 +179,18 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 
 			$scope.saveEditExpense = function() {
 
-				var day = document.getElementById('dueDateDayID').value;
+				if (document.getElementById('dueDateDayID')) {
+					var day = document.getElementById('dueDateDayID').value;
+				}
+
+			 	$scope.editExpenseModalAmount =	($scope.editExpenseModalAmount).formatMoney(2);
 
 				var changes = {
-					name: $scope.editExpenseModalName,
+					name: $scope.editExpenseModalName.toString(),
 					amount: $scope.editExpenseModalAmount,
 					reoccuring: $scope.editExpenseModalReoccuring,
 					dueDay: day,
-					category: $scope.editExpenseModalCategory
+					category: $scope.editExpenseModalCategory.toString()
 				};
 
 				$http.put('/api/editExpense/' + $scope.editExpenseModalID + 
@@ -204,7 +224,7 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 			};
 
 			$scope.newExpenseCategory = function() {
-				var input = document.getElementById('editingInput').value;
+				var input = document.getElementById('editingInput').value.toString();
 				$http.put('/api/newExpenseCategory/' + input).success(function(data){
 					console.log('Added New Category : ' + input);
 					document.getElementById('editingInput').value = '';
@@ -231,7 +251,7 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 			};
 
 			$scope.saveEditExpenseCategory = function() {
-				$http.put('/api/editExpenseCategory/' + $scope.editCategoryModalID + '/' + $scope.editCategoryModalName).success(function(data){
+				$http.put('/api/editExpenseCategory/' + $scope.editCategoryModalID + '/' + $scope.editCategoryModalName.toString()).success(function(data){
 					getAllCategories();
 				});
 			};
@@ -264,20 +284,48 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 			});
 		};
 
+		var getAllExpenses = function() {
+			$http.get('/api/expenses').success(function(data) {
+				$scope.expenses = data;
+				
+				getExpenseTotal(data);
+			});
+		};
+
+		var getExpenseTotal = function(expenses) {
+			var q = 0;
+			var localTotal = [];
+			while( q < expenses.length ) {
+				localTotal.push(expenses[q].amount);
+				q = q + 1;
+			}
+			p = parseFloat(eval(localTotal.join('+')));
+			$scope.totalDeductions = (p).formatMoney(2);
+			if (!$scope.totalDeductions) {$scope.totalDeductions = 0;}
+		};				
+
 		getAllCategories();
+		getAllExpenses();
 
 		$scope.addNewExpense = function() {
 
-			var dueDateDay = document.getElementById('dueDateDayID').value;
-			// var dueDateMonth = document.getElementById('dueDateMonthID').value;
+			var dueDateDay = 1;
+			if (document.getElementById('dueDateDayID')) {
+				dueDateDay = document.getElementById('dueDateDayID').value;
+			}
 
-			var localCategory = document.getElementById('newExpenseCategoryID').value;
+			var localCategory;
+			if (document.getElementById('newExpenseCategoryID')) {
+				localCategory = document.getElementById('newExpenseCategoryID').value;
+			}
 
 			var goHome = function() {
 				$state.go('home');
 			}
 
-			var bool = $scope.reoccuring.toString();
+			var bool = $scope.reoccuring;
+
+			$scope.newExpenseAmount = ($scope.newExpenseAmount).formatMoney(2);
 
 			$http.put('/api/newExpense/' + $scope.newExpenseName + '/' + $scope.newExpenseAmount + '/' + bool + '/' + dueDateDay + '/' + localCategory)
 				.success(function(data) {
@@ -310,10 +358,13 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 			var p = 0;
 			var localTotal = [];
 			while( p < incomes.length ) {
-				localTotal.push(parseFloat(incomes[p].amount.toString()));
+				localTotal.push(incomes[p].amount);
 				p = p + 1;
 			}
-			$scope.positiveAmount = eval(localTotal.join('+'));
+
+			p = parseFloat(eval(localTotal.join('+')));
+			$scope.positiveAmount = (p).formatMoney(2);
+			if (!$scope.positiveAmount) {$scope.positiveAmount = 0;}
 			return;
 		};
 
@@ -322,7 +373,7 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 
 			var day = document.getElementById('dueDateDayID').value;
 
-			$http.put('/api/addNewIncome/' + $scope.newIncomeName + '/' + $scope.newIncomeAmount + '/' + $scope.reoccuring + '/' + day)
+			$http.put('/api/addNewIncome/' + $scope.newIncomeName.toString() + '/' + $scope.newIncomeAmount + '/' + $scope.reoccuring + '/' + day)
 				.success(function(data){
 					$scope.newIncomeName = '';
 					$scope.newIncomeAmount = 0;
@@ -350,7 +401,7 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 		$scope.saveEditIncome = function() {
 			var day = document.getElementById('dueDateDayID').value;
 
-			$http.put('/api/editIncome/' + $scope.editIncomeModalID  + '/' + $scope.editIncomeModalName + '/' + $scope.editIncomeModalAmount + '/' + $scope.editIncomeModalReoccuring + '/' + day).success(function(data){
+			$http.put('/api/editIncome/' + $scope.editIncomeModalID  + '/' + $scope.editIncomeModalName.toString() + '/' + $scope.editIncomeModalAmount + '/' + $scope.editIncomeModalReoccuring + '/' + day).success(function(data){
 				$scope.newIncomeName = '';
 				$scope.newIncomeAmount = null;
 				$scope.reoccuring = false;

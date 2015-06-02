@@ -4,7 +4,9 @@
 <div style="background-color: white;" class="home">
 
 	<h1 class="text-center">{{welcomeMessage}}</h1>
-	<h4 class="text-center">Final Month Net = ${{finalMonthNet}}</h4>
+	<h4 class="text-center">
+		Final Month Net = $<span ng-if="finalMonthNet >=0" style="color: green;" >{{finalMonthNet}}</span> <span ng-if="finalMonthNet < 0" style="color: red;" >{{finalMonthNet}}</span>
+	</h4>
 
 	<div class="row">
 		<div class="col-xs-4">
@@ -77,7 +79,7 @@
 					<span ng-click="deleteExpenseID(expense._id)" class="pull-right glyphicon glyphicon-trash">
 				</div>
 				<div class="panel-body">
-					Amount: {{expense.amount}} <br>
+					Amount: ${{expense.amount}} <br>
 					Re-Occuring: {{expense.reoccuring}}<br>
 					Due Date: {{expense.dueDay}}<br>
 					Category: {{expense.category}}
