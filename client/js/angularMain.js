@@ -58,7 +58,7 @@ var app = angular.module('personalFinanceApp' , ['ui.router'])
 
 		$scope.totalDeductions;
 		$scope.totalIncome;
-		$scope.finalMonthNet;
+		// $scope.finalMonthNet;
 	
 		// HELPER FUNCTIONS
 		// ==============================================
