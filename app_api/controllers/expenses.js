@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
-var Expense = mongoose.model('Expense');
-var Category = mongoose.model('Category');
+var DateIdea = mongoose.model('DateIdea');
+
 
 
 // HELPER FUNCTIONS 
@@ -10,6 +10,19 @@ var Category = mongoose.model('Category');
 	    res.json(content);
 	};
 // ========== END HELPER ==================
+
+module.exports.getAllTimes = function( req , res ) {
+	DateIdea.find({})
+		.exec(function(err , times) {
+			if (err) {sendJSONResponse( res , 404 , err);}
+			else {
+				if (expenses) {
+					sendJSONResponse( res , 200 , times);
+				}
+			}
+		})
+	;
+};
 
 
 module.exports.newExpense = function( req , res ) {

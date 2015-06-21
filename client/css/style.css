@@ -58,14 +58,5 @@ body {
   visibility: hidden;
 }
 
-.headLineTag h1 {
-  font-size: 20px;
-  border-top: 3px solid red;
- 
-}
 
-.displayBox {
-    border-style: solid;
-    border-width: medium
-}
 

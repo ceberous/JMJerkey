@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 var gracefulShutdown;
- var dbURI = 'mongodb://localhost/PersonalFinanceApp';
+var dbURI = 'mongodb://localhost/DateVoter';
 // var dbURI = 'mongodb://root:ry8ziBonaq@proximus.modulusmongo.net:27017/togyhy6B';
 
 
@@ -20,6 +20,4 @@ mongoose.connection.on('disconnected', function() {
 
 
 // BRING IN YOUR SCHEMAS & MODELS
-require('./expenses');
-require('./income');
-require('./categories');
+require('./dateIdeas');
