@@ -1,50 +1,29 @@
 <div class="row">
 
-	<div id="wrapperDiv2">
-		<!-- <h1 class="text-center">{{vm.main}}</h1> <br> -->
-	</div>
-	
-	<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-2 col-xs-12" >
-		<div class="wrapperDiv" style="border-style: solid; border-color: green;">
+	<!-- <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-2 col-xs-12" > -->
+		
 
-			<h1 ng-if="vm.enableInput" class="text-center"><button ng-click="vm.newDateIdea()" class="btn btn-success">New Date Idea</button></h1>
+	<h1 class="text-center" ><img src="../img/Logo.png"></h1>
 
-			<div class="row" ng-if="!vm.enableInput">
-				<div class="col-xs-6">
-					<h1 class="text-center"><button ng-click="vm.submitNewDateIdea()" class="btn btn-warning">Submit</button></h1>
-				</div>
-				<div class="col-xs-6">
-					<h1 class="text-center"><button ng-click="vm.cancelNewDateIdea()" class="btn btn-danger">Cancel</button></h1>
-				</div>
-			</div>			
+	<div class="wrapperDiv" style="border-style: solid; border-color: green;">
 
-			<h1 class="text-center"><input id="startDate" ng-if="vm.showNewDateForm" ng-model="vm.newDate" type="date" ></h1>							
-			<h1 class="text-center"><input id="startTime" ng-if="vm.showNewDateForm" ng-model="vm.newStartTime" type="time" ><span ng-if="vm.showNewDateForm"> {{vm.timeZone}}</span></h1>
+		
+		<div class="row">
+			
+			<div class="col-sm-6">
+				<h2 class="text-center" ><img src="../img/JerkeyGIF.gif"></h2>
+			</div>
 
-
-			<div class="row" ng-repeat="time in vm.allTimes | orderBy:'-score'">
-				<div class="col-xs-12">
-					<br>
-					<div class="text-center">
-						<span ng-click="vm.upVote(time._id)" class="glyphicon glyphicon-arrow-up"></span>
-						<span>{{time.month}}</span>
-						<span>{{time.day}} | </span>
-						<span>{{time.year}} | </span>
-						<span>{{time.hour}} : </span>
-						<span>{{time.minutes}} | </span>
-						<span>{{time.timezone}}</span>
-						<span ng-click="vm.downVote(time._id)" class="glyphicon glyphicon-arrow-down"></span>
-						<span ng-click="vm.deleteDateIdea(time._id)" class="glyphicon glyphicon-trash"></span>
-						<br>
-						<span>{{time.score}}</span>
-					</div>
-					<br><br>
-				</div>
+			<div class="col-sm-6">
+				<h2 class="text-center" ><img src="../img/SalsaGIF.gif"></h2>
 			</div>
 
 		</div>
+
+
 	</div>
 
+	<!-- </div> -->
 
 </div>
 

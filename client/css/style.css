@@ -1,5 +1,5 @@
 body {
-    background: url('') no-repeat center center fixed;
+    background: url('../img/background.jpg') no-repeat center center fixed;
     -webkit-background-size: cover; /* For WebKit*/
     -moz-background-size: cover;    /* Mozilla*/
     -o-background-size: cover;      /* Opera*/
@@ -32,30 +32,21 @@ body {
     padding-top: 12px;
     padding-bottom: 12px;
   }
+
+  .navbar {
+      padding: 10px 0;
+      -webkit-transition: background .5s ease-in-out,padding .5s ease-in-out;
+      -moz-transition: background .5s ease-in-out,padding .5s ease-in-out;
+      transition: background .5s ease-in-out,padding .5s ease-in-out;
+  }
+
+  .top-nav-collapse {
+      padding: 0;
+  }
 }
 
 .navbar-header {
   display: flex;
-}
-
-@media (max-width: 769px) {
-  .navbar-default{
-    
-    /* 
-    background-color: transparent;
-    border-color: transparent;
-    */
-  }
-
-  .mainContent {
-   
-
-  }
-
-}
-
-.hidden {
-  visibility: hidden;
 }
 
 
